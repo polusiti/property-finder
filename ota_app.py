@@ -468,12 +468,11 @@ with tab_top:
                     unsafe_allow_html=True)
             with right:
                 st.markdown("**Bargain Score Breakdown**")
-                st.progress(r["price_gap_pt"]/100,
-                            text=f"Price gap:   {r['price_gap_pt']:.0f}pt")
-                st.progress(r["urgency_pt"]/100,
-                            text=f"Urgency:     {r['urgency_pt']:.0f}pt")
-                st.progress(r["competition_pt"]/100,
-                            text=f"Low compete: {r['competition_pt']:.0f}pt")
+                st.markdown(
+                    f"Price gap: **{r['price_gap_pt']:.0f}pt**  \n"
+                    f"Urgency: **{r['urgency_pt']:.0f}pt**  \n"
+                    f"Low compete: **{r['competition_pt']:.0f}pt**"
+                )
             st.markdown(f'[View on SUUMO]({r["URL"]})')
 
 # ── TX PRICE GAP ──
