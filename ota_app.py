@@ -172,7 +172,7 @@ hr {
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-MLIT_API_KEY = st.secrets.get("MLIT_API_KEY", "c7dc344fd0ce4723ae86f228441e22ef")
+MLIT_API_KEY = st.secrets.get("MLIT_API_KEY", "")
 WARD_CODES   = ["13111", "13110"]  # 大田区, 目黒区
 DESTINATION  = "Shibuya"
 CACHE_DIR    = ROOT / ".run_cache"
