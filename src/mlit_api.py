@@ -48,11 +48,12 @@ class MlitPriceModel:
     # データ取得・モデル構築
     # ──────────────────────────────────────────────
 
-    def load(self, city_code: str = "13111",
+    def load(self, city_code = "13111",
              years: List[str] = None,
              force_refresh: bool = False) -> dict:
         """
         APIから売買取引データを取得して地区別価格モデルを構築する。
+        city_code は str または List[str] で複数区指定可。
         キャッシュが存在すればそれを使用（force_refresh=Trueで強制再取得）。
 
         Returns: {district: {count, median_price_per_m2, p25, p75}}
@@ -60,8 +61,11 @@ class MlitPriceModel:
         if years is None:
             years = ["2023", "2024"]
 
+        city_codes = [city_code] if isinstance(city_code, str) else list(city_code)
+        cache_key = "_".join(sorted(city_codes))
+
         CACHE_DIR.mkdir(exist_ok=True)
-        cache_file = CACHE_DIR / f"mlit_{city_code}_{'_'.join(years)}.json"
+        cache_file = CACHE_DIR / f"mlit_{cache_key}_{'_'.join(years)}.json"
 
         if not force_refresh and cache_file.exists():
             logger.info("MLITキャッシュから読み込み: %s", cache_file)
@@ -70,16 +74,17 @@ class MlitPriceModel:
             self._loaded = True
             return self._district_stats
 
-        logger.info("MLIT APIからデータ取得中 (city=%s, years=%s)...", city_code, years)
+        logger.info("MLIT APIからデータ取得中 (cities=%s, years=%s)...", city_codes, years)
         raw: List[dict] = []
-        for year in years:
-            for quarter in ["1", "2", "3", "4"]:
-                try:
-                    items = self._fetch_quarter(city_code, year, quarter)
-                    raw.extend(items)
-                    time.sleep(0.3)
-                except Exception as e:
-                    logger.warning("MLIT取得失敗 %sQ%s: %s", year, quarter, e)
+        for code in city_codes:
+            for year in years:
+                for quarter in ["1", "2", "3", "4"]:
+                    try:
+                        items = self._fetch_quarter(code, year, quarter)
+                        raw.extend(items)
+                        time.sleep(0.3)
+                    except Exception as e:
+                        logger.warning("MLIT取得失敗 city=%s %sQ%s: %s", code, year, quarter, e)
 
         logger.info("MLIT 取得合計: %d件 マンション", len(raw))
         self._district_stats = self._build_stats(raw)

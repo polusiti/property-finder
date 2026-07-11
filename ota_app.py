@@ -1,5 +1,5 @@
 """
-Ota Ward Property Radar — Streamlit app
+Ota & Meguro Property Radar — Streamlit app
 Run: streamlit run ota_app.py
 """
 
@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT))
 logging.basicConfig(level=logging.WARNING)
 
 st.set_page_config(
-    page_title="Ota Ward Property Radar",
+    page_title="Ota & Meguro Property Radar",
     page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -173,7 +173,7 @@ hr {
 
 # ─────────────────────────────────────────────
 MLIT_API_KEY = st.secrets.get("MLIT_API_KEY", "c7dc344fd0ce4723ae86f228441e22ef")
-WARD_CODE    = "13111"
+WARD_CODES   = ["13111", "13110"]  # 大田区, 目黒区
 DESTINATION  = "Shibuya"
 CACHE_DIR    = ROOT / ".run_cache"
 MAX_COMMUTE  = 60
@@ -183,7 +183,7 @@ MAX_COMMUTE  = 60
 def get_mlit_model():
     from src.mlit_api import MlitPriceModel
     m = MlitPriceModel(api_key=MLIT_API_KEY)
-    m.load(city_code=WARD_CODE, years=["2022","2023","2024"])
+    m.load(city_code=WARD_CODES, years=["2022","2023","2024"])
     return m
 
 
@@ -323,7 +323,7 @@ with st.sidebar:
 # ─────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────
-st.markdown("## Ota Ward Property Radar")
+st.markdown("## Ota & Meguro Property Radar")
 st.markdown(
     '<span style="font-size:11px;color:#555">'
     'Commute base: Shibuya &nbsp;|&nbsp; '
