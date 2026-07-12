@@ -57,7 +57,7 @@ else:
     scraper = SuumoScraper(delay_range=(2.0, 4.0))
     props = scraper.search(
         prefecture="東京都", max_rent_man=15.0, min_area=20.0,
-        max_walk_min=15, max_pages=10, ward_codes=["13111", "13110"],
+        max_walk_min=15, max_pages=20, ward_codes=["13111", "13110"],
     )
     print(f"  取得: {len(props)} 件")
     with open(step1_file, "w", encoding="utf-8") as f:
