@@ -19,10 +19,13 @@ def props_to_json(props):
             "rent": p.rent, "admin_fee": p.admin_fee,
             "deposit": p.deposit, "key_money": p.key_money,
             "floor_plan": p.floor_plan, "area": p.area,
-            "age_years": p.age_years, "floor": p.floor, "structure": p.structure,
+            "built_year": p.built_year, "floor": p.floor,
+            "total_floors": p.total_floors, "structure": p.structure,
+            "prefecture": p.prefecture,
             "total_monthly": p.total_monthly,
             "lat": p.lat, "lon": p.lon,
             "station_name": ns.name if ns else None,
+            "station_line": ns.line if ns else None,
             "station_walk": ns.walk_minutes if ns else None,
             "commute_minutes": p.commute_minutes,
             "score": p.score, "score_details": p.score_details,
@@ -33,16 +36,26 @@ def props_to_json(props):
 def json_to_props(data):
     props = []
     for d in data:
+        stations = []
+        if d.get("station_name"):
+            stations = [StationInfo(
+                line=d.get("station_line") or "",
+                name=d["station_name"],
+                walk_minutes=d.get("station_walk") or 15,
+            )]
         p = Property(
             id=d["id"], name=d["name"], url=d["url"], address=d["address"],
             rent=d["rent"], admin_fee=d["admin_fee"],
             deposit=d["deposit"], key_money=d["key_money"],
-            floor_plan=d["floor_plan"], area=d["area"],
-            age_years=d["age_years"], floor=d["floor"], structure=d["structure"],
+            floor_plan=d["floor_plan"], area=float(d.get("area") or 0),
+            built_year=d.get("built_year") or 0,
+            floor=d.get("floor") or 1,
+            total_floors=d.get("total_floors") or 1,
+            structure=d.get("structure") or "",
+            prefecture=d.get("prefecture") or "東京都",
+            stations=stations,
         )
         p.lat = d.get("lat"); p.lon = d.get("lon")
-        if d.get("station_name"):
-            p.nearest_station = StationInfo(name=d["station_name"], walk_minutes=d["station_walk"] or 15)
         props.append(p)
     return props
 
@@ -56,8 +69,8 @@ else:
     print("Step1: SUUMOスクレイピング開始...")
     scraper = SuumoScraper(delay_range=(2.0, 4.0))
     props = scraper.search(
-        prefecture="東京都", max_rent_man=15.0, min_area=20.0,
-        max_walk_min=15, max_pages=20, ward_codes=["13111", "13110"],
+        prefecture="東京都", max_rent_man=18.0, min_area=20.0,
+        max_walk_min=20, max_pages=30, ward_codes=["13111", "13110"],
     )
     print(f"  取得: {len(props)} 件")
     with open(step1_file, "w", encoding="utf-8") as f:
