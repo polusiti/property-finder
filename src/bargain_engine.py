@@ -141,9 +141,14 @@ class BargainEngine:
     def _score_contrarian(self, prop) -> float:
         """一般人が避けるが実は価値がある条件を加点する。"""
         score = 20.0
+        age = prop.age_years
 
-        # 築古 + 良構造（RC/SRC）= 防音・耐久性は十分、安い
-        if prop.age_years >= 25 and prop.structure in ("RC", "鉄筋コンクリート", "SRC"):
+        # 旧耐震基準（1981年以前 = 築44年以上）は大幅減点
+        if age >= 44:
+            return max(0.0, score - 35)
+
+        # 築古RC/SRC（25〜43年）= 新耐震基準内・防音良好・安い
+        if 25 <= age < 44 and prop.structure in ("RC", "鉄筋コンクリート", "SRC"):
             score += 45
 
         # 1階 + 広め = 専用庭・天井高の可能性

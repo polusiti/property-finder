@@ -289,6 +289,8 @@ with st.sidebar:
     max_rent    = st.slider("Max Rent (10k JPY)", 5, 20, 15)
     max_commute = st.slider("Max Commute (min)", 20, 60, 50)
     max_walk    = st.slider("Max Walk (min)", 3, 20, 15)
+    max_age     = st.slider("Max Building Age (yr)", 5, 60, 44,
+                            help="44yr = 新耐震基準（1981年）以降のみ")
     layouts     = st.multiselect("Layout",
         ["Studio","1K","1DK","1LDK","2K","2DK","2LDK","3K+"],
         default=[], placeholder="All")
@@ -342,9 +344,11 @@ if df_all.empty:
 
 # Apply filters
 df = df_all.copy()
+df = df[df["Area"] <= 120]                          # 面積異常値除外
 df = df[df["Rent"] <= max_rent * 10000]
 df = df[df["Commute Min"] <= max_commute]
 df = df[df["Walk Min"] <= max_walk]
+df = df[df["Age"].fillna(999) <= max_age]           # 築年数フィルター
 layout_map = {"Studio": "ワンルーム", "1K": "1K", "1DK": "1DK",
               "1LDK": "1LDK", "2K": "2K", "2DK": "2DK", "2LDK": "2LDK"}
 if layouts:
