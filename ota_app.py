@@ -203,9 +203,19 @@ def load_and_score(_mlit, cache_stamp: str) -> pd.DataFrame:
     else:
         return pd.DataFrame()
 
-    props = []
+    # 重複除去（家賃・面積・間取り・駅が同じ物件は1件に絞る）
+    seen_keys = set()
+    deduped_raw = []
     for d in raw:
-        built_year = d["built_year"] if "built_year" in d else (
+        ns_name = d.get("station_name") or ""
+        key = (d["rent"], round(float(d["area"] or 0)), d["floor_plan"], ns_name)
+        if key not in seen_keys:
+            seen_keys.add(key)
+            deduped_raw.append(d)
+
+    props = []
+    for d in deduped_raw:
+        built_year = d.get("built_year") or (
             CURRENT_YEAR - (d.get("age_years") or 0) if d.get("age_years") else 0)
         if "stations" in d and d["stations"]:
             stations = [StationInfo(line=s.get("line",""), name=s["name"],
@@ -221,8 +231,8 @@ def load_and_score(_mlit, cache_stamp: str) -> pd.DataFrame:
             stations=stations, rent=d["rent"], admin_fee=d["admin_fee"],
             deposit=d["deposit"], key_money=d["key_money"],
             floor_plan=d["floor_plan"], area=d["area"],
-            built_year=built_year, floor=d["floor"],
-            total_floors=d.get("total_floors", 0), structure=d["structure"],
+            built_year=built_year, floor=d.get("floor") or 1,
+            total_floors=d.get("total_floors") or 1, structure=d.get("structure") or "",
         )
         p.lat = d.get("lat"); p.lon = d.get("lon")
         p.commute_minutes = d.get("commute_minutes")
