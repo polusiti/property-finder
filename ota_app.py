@@ -317,6 +317,63 @@ with st.sidebar:
             load_and_score.clear(); st.rerun()
 
     st.divider()
+
+    # GeoLibre export
+    st.markdown("**EXPORT**")
+    if not df_all.empty:
+        def build_geojson(dataframe):
+            features = []
+            for _, r in dataframe.iterrows():
+                if pd.isna(r.get("lat")) or pd.isna(r.get("lon")):
+                    continue
+                features.append({
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [r["lon"], r["lat"]]},
+                    "properties": {
+                        "name":         r["Name"],
+                        "address":      r["Address"],
+                        "rent_man":     r["Rent"] // 10000,
+                        "layout":       r["Layout"],
+                        "area_sqm":     r["Area"],
+                        "age_yr":       int(r["Age"]) if pd.notna(r["Age"]) else None,
+                        "structure":    r["Structure"],
+                        "station":      r["Station"],
+                        "walk_min":     int(r["Walk Min"]),
+                        "commute_min":  int(r["Commute Min"]),
+                        "livability":   r["Livability"],
+                        "bargain":      r["Bargain"],
+                        "tx_gap_pct":   round(r["Tx Gap %"], 1) if pd.notna(r.get("Tx Gap %")) else None,
+                        "district_rank":r["District Rank"],
+                        "url":          r["URL"],
+                    }
+                })
+            return json.dumps({"type": "FeatureCollection", "features": features},
+                              ensure_ascii=False, indent=2)
+
+        geojson_all = build_geojson(df_all)
+        geojson_filtered = build_geojson(df)
+
+        st.download_button(
+            label=f"GeoJSON (全 {len(df_all)}件)",
+            data=geojson_all,
+            file_name="ota_meguro_properties.geojson",
+            mime="application/geo+json",
+            use_container_width=True,
+        )
+        st.download_button(
+            label=f"GeoJSON (絞込 {len(df)}件)",
+            data=geojson_filtered,
+            file_name="ota_meguro_filtered.geojson",
+            mime="application/geo+json",
+            use_container_width=True,
+        )
+        st.markdown(
+            '<span style="font-size:9px;color:#888">'
+            '↑ <a href="https://web.geolibre.app" target="_blank">GeoLibre</a> にドロップして高度GIS分析'
+            '</span>',
+            unsafe_allow_html=True)
+
+    st.divider()
     st.markdown(
         '<span style="font-size:10px;color:#888">Data: SUUMO / MLIT API 2022-2024</span>',
         unsafe_allow_html=True)
